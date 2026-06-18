@@ -1,3 +1,4 @@
+use crate::board::Color;
 /// `MoveGenerator` é uma estrutura utilitária que contém toda a lógica 
 /// para gerar ataques e movimentos legais para cada peça do xadrez.
 pub struct MoveGenerator;
@@ -17,7 +18,7 @@ impl MoveGenerator {
     }
 
     /// Calcula os movimentos básicos do cavalo usando saltos de bits pré-definidos.
-    fn generate_knight_attacks(sq: u64) -> u64 {
+    pub fn generate_knight_attacks(sq: u64) -> u64 {
         (sq << 17 & NOT_A_FILE) | (sq << 15 & NOT_H_FILE) |
         (sq << 10 & NOT_AB_FILE) | (sq << 6 & NOT_GH_FILE) |
         (sq >> 17 & NOT_H_FILE) | (sq >> 15 & NOT_A_FILE) |
@@ -106,36 +107,30 @@ impl MoveGenerator {
         attacks
     }
 
-    /// Gera as casas atacadas diagonalmente por um peão (usadas para captura).
-    pub fn generate_pawn_captures(square: u64, color: &str) -> u64 {
-        if color == "white" {
+    pub fn generate_pawn_captures(square: u64, color: Color) -> u64 {
+        if color == Color::White {
             ((square << 7) & 0x7F7F7F7F7F7F7F7F) | ((square << 9) & 0xFEFEFEFEFEFEFEFE)
         } else {
             ((square >> 7) & 0xFEFEFEFEFEFEFEFE) | ((square >> 9) & 0x7F7F7F7F7F7F7F7F)
         }
     }
 
-    /// Calcula movimentos de avanço do peão, considerando bloqueios e avanço duplo.
-    pub fn generate_pawn_pushes(square: u64, color: &str, occupancy: u64) -> u64 {
+    pub fn generate_pawn_pushes(square: u64, color: Color, occupancy: u64) -> u64 {
         let mut pushes = 0u64;
-        let forward: i32 = if color == "white" { 8 } else { -8 };
+        let forward: i32 = if color == Color::White { 8 } else { -8 };
 
-        // Calcula casa imediatamente à frente
         let single = if forward > 0 { 
             square << forward as u32 
         } else { 
             square >> forward.abs() as u32 
         };
         
-        // Só pode avançar se a casa estiver desocupada
         if (single & occupancy) == 0 {
             pushes |= single;
-            
-            // Avanço duplo: verificação de rank inicial e casas livres
+            // Lógica de avanço duplo (rank 2 ou 7)
             let double = if forward > 0 { single << 8 } else { single >> 8 };
-            let rank_start = if color == "white" { 0xFF00 } else { 0xFF000000000000 };
-            
-            if (square & rank_start) != 0 && (double & occupancy) == 0 {
+            if (color == Color::White && (square & 0xFF00) != 0 && (double & occupancy) == 0) ||
+               (color == Color::Black && (square & 0xFF000000000000) != 0 && (double & occupancy) == 0) {
                 pushes |= double;
             }
         }

@@ -1,18 +1,32 @@
-/// O módulo `board` contém a estrutura do tabuleiro e os métodos de Bitboard.
 mod board;
-
-/// O módulo `moves` contém a lógica de geração de ataques para todas as peças.
 mod moves;
+mod engine;
+mod tests;
 
-/// O módulo `tests` contém a suíte de testes unitários para validar a lógica das peças.
-/// O atributo `#[cfg(test)]` garante que este código seja compilado apenas durante os testes.
-mod tests; 
+use board::Board;
+use engine::Engine;
 
 fn main() {
-    // Ponto de entrada da aplicação.
-    // Inicializa a Engine e prepara o ambiente para o loop principal.
-    println!("KnightEngine inicializado com sucesso.");
-    
-    // TODO: No futuro, implementaremos aqui o loop principal de jogo (Game Loop),
-    // a leitura de comandos UCI (Universal Chess Interface) e a busca de lances.
+    println!("--- KnightEngine: Motor de Xadrez ---");
+
+    // 1. Inicializa o tabuleiro com as peças nas posições padrão
+    let board = Board::new();
+
+    // 2. Imprime o tabuleiro (usando a função que você já tem no board.rs)
+    println!("Tabuleiro Inicial:");
+    board.print_board();
+
+    // 3. Verifica se as brancas estão em xeque (deve ser false no início)
+    let white_in_check = Engine::is_in_check(board::Color::White, &board);
+    println!("\nAs brancas estão em xeque? {}", white_in_check);
+
+    // 4. Testa a geração de movimentos legais para o cavalo em g1 (índice 6)
+    // O cavalo em g1 pode mover para f3 (índice 21) ou h3 (índice 23)
+    let g1 = 1u64 << 6;
+    let moves_g1 = Engine::get_legal_moves(g1, &board);
+
+    println!("\nMovimentos legais para o Cavalo em g1:");
+    Board::print_attacks(moves_g1);
+
+    println!("\nTeste concluído com sucesso!");
 }

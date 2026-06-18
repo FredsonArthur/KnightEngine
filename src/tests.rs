@@ -3,6 +3,7 @@
 #[cfg(test)]
 mod tests {
     use crate::moves::MoveGenerator;
+    use crate::board::{Board, Color};
 
     /// Testa se o cavalo respeita a presença de peças aliadas,
     /// não permitindo movimentos para casas já ocupadas pelo próprio time.
@@ -93,7 +94,7 @@ mod tests {
     fn test_pawn_white_push() {
         let e2 = 1u64 << 12; 
         let occupancy = 0u64;
-        let moves = MoveGenerator::generate_pawn_pushes(e2, "white", occupancy);
+        let moves = MoveGenerator::generate_pawn_pushes(e2, Color::White, occupancy);
         
         assert!((moves & (1u64 << 20)) != 0, "Peão e2 deve poder avançar para e3");
         assert!((moves & (1u64 << 28)) != 0, "Peão e2 deve poder avançar para e4");
